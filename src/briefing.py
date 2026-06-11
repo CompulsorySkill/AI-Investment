@@ -144,10 +144,13 @@ def _build_morning() -> str:
     titles_only = " ".join(_clean_html(a.get("title", "")) for a in filtered[:8])
 
     insight = _ai_insight("隔夜要闻", titles_only)
+    focus = _ai_insight("隔夜要闻——请给出今天白天最值得关注的1-2件事", titles_only, max_tokens=100)
 
     insight_block = ""
     if insight:
-        insight_block = f"\n\n🧠 **AI 解读**\n{insight}\n"
+        insight_block += f"\n🧠 **AI 解读**\n{insight}\n"
+    if focus:
+        insight_block += f"\n🔮 **今日重点关注**\n{focus}\n"
 
     return f"""☀️ **{today} 早间简报**　|　{now.strftime('%H:%M')}
 
@@ -158,8 +161,7 @@ def _build_morning() -> str:
 
 **📰 隔夜要闻**
 {news_block}
-{insight_block}
-> 📐 盘中 14:30 推送收盘前操作指令"""
+{insight_block}> 📐 盘中 14:30 推送收盘前操作指令"""
 
 
 def _build_midday() -> str:
@@ -232,7 +234,10 @@ def _build_evening() -> str:
     titles_only = " ".join(_clean_html(a.get("title", "")) for a in filtered[:8])
 
     insight = _ai_insight("今日晚间要闻", titles_only)
+    focus = _ai_insight("今日晚间要闻——请给出今晚最值得关注的1-2件事", titles_only, max_tokens=100)
+
     insight_block = f"\n🧠 **AI 解读**\n{insight}\n" if insight else ""
+    focus_block = f"\n🔮 **今晚关注**\n{focus}\n" if focus else ""
 
     return f"""🌆 **{today} 夜盘前瞻**　|　{now.strftime('%H:%M')}
 
@@ -241,13 +246,7 @@ def _build_evening() -> str:
 
 **📰 今日要闻**
 {news_block}
-{insight_block}
-**🔮 今晚关注**
-· 美股期货夜盘走势
-· 是否有 CPI/非农/美联储等重磅事件
-· VIX > 25 时做好明天波动的心理准备
-
-> ☀️ 明早 09:00 推送收盘复盘"""
+{insight_block}{focus_block}> ☀️ 明早 09:00 推送收盘复盘"""
 
 
 # ═══════════════════════════════════════════════════════════════
