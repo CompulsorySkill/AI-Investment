@@ -36,3 +36,6 @@ _legacy_backup/
 
 # uv
 uv.lock
+
+# PAT
+feishu_triggers_pat.md

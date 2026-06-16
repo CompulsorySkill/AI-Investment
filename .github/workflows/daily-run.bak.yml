@@ -1,15 +1,14 @@
 name: 量化投资简报
 
 on:
-  # ⚠️ 核心修改：已经将 GitHub 内部的排队定时器全部注释掉！
-  # 现在 GitHub 变成了一个纯粹的算力节点，等待飞书准点发送指令唤醒
-  # schedule:
-  #   - cron: '37 0 * * 1-5'     
-  #   - cron: '23 3 * * 1-5'     
-  #   - cron: '17 6 * * 1-5'     
-  #   - cron: '7 12 * * 1-5'     
-  #   - cron: '37 0 * * 6'       
-  #   - cron: '7 12 * * 0'       
+  schedule:
+    # 北京时间 = UTC + 8，所有 cron 在整点前后 7-37 分钟错峰
+    - cron: '37 0 * * 1-5'     # 08:37 BJT  早间：美股昨夜复盘
+    - cron: '23 3 * * 1-5'     # 11:23 BJT  午间：行情异动 + 新闻
+    - cron: '17 6 * * 1-5'     # 14:17 BJT  收盘前：全资产偏离度 + 死结论
+    - cron: '7 12 * * 1-5'     # 20:07 BJT  夜盘：美股前瞻
+    - cron: '37 0 * * 6'       # 周六 08:37  周五美股收盘复盘
+    - cron: '7 12 * * 0'       # 周日 20:07  周末宏观总结 + 周一前瞻
 
   workflow_dispatch:
     inputs:
@@ -68,12 +67,9 @@ jobs:
         run: |
           # ── 确定模式 ──
           MODE="${{ github.event.inputs.mode || '' }}"
-          
-          # 兜底逻辑：万一你在 GitHub 网页端直接点 Run，没传参数
           if [ -z "$MODE" ]; then
-            # 顺手修复了之前的 %-H 八进制坑
-            HOUR=$(TZ='Asia/Shanghai' date '+%-H')
-            DAY=$(TZ='Asia/Shanghai' date '+%u')   
+            HOUR=$(TZ='Asia/Shanghai' date '+%H')
+            DAY=$(TZ='Asia/Shanghai' date '+%u')   # 1=Mon … 7=Sun
             if [ "$DAY" = "6" ]; then
               MODE="sat_morning"
             elif [ "$DAY" = "7" ]; then
@@ -90,11 +86,11 @@ jobs:
           fi
 
           echo "=========================================="
-          echo "  AI 量化投资系统 (外部控制版)"
+          echo "  AI 量化投资系统"
           echo "=========================================="
           echo "北京时间: $(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
           echo "星期: $(TZ='Asia/Shanghai' date '+%u')"
-          echo "执行模式: $MODE"
+          echo "模式: $MODE"
           echo ""
 
           # ── Step 0: Pending 交易确认（每天每条管线都跑） ──
