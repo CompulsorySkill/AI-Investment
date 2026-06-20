@@ -97,7 +97,7 @@ def fetch_cn_etf(code: str) -> Optional[dict]:
                 "source": "akshare_em",
             }
     except Exception:
-        pass
+        logger.debug("[%s] akshare_em 源失败", code)
 
     # 策略 2: 新浪源（英文列名，需手算涨跌）
     try:
@@ -117,7 +117,7 @@ def fetch_cn_etf(code: str) -> Optional[dict]:
                 "source": "akshare_sina",
             }
     except Exception:
-        pass
+        logger.debug("[%s] akshare_sina 源失败", code)
 
     logger.warning(f"[{code}] {name} 所有数据源均失败")
     return None
@@ -168,7 +168,7 @@ def fetch_us_etf(ticker: str) -> Optional[dict]:
                 "source": "yfinance",
             }
     except Exception:
-        pass
+        logger.debug("[%s] yfinance 源失败", ticker)
 
     # 策略 2: akshare 东方财富源（国内可用，免费无需代理）
     try:
@@ -185,7 +185,7 @@ def fetch_us_etf(ticker: str) -> Optional[dict]:
                 "source": "akshare_em",
             }
     except Exception:
-        pass
+        logger.debug("[%s] akshare_em 源失败", ticker)
 
     # 策略 3: akshare 新浪源
     try:
@@ -202,7 +202,7 @@ def fetch_us_etf(ticker: str) -> Optional[dict]:
                 "source": "akshare_sina",
             }
     except Exception:
-        pass
+        logger.debug("[%s] akshare_sina 源失败", ticker)
 
     logger.warning(f"[{ticker}] {name} 所有数据源均失败")
     return None
@@ -254,7 +254,7 @@ def fetch_vix() -> Optional[dict]:
             vix = round(float(valid[-1][1]), 2)
             return {"vix": vix, "level": _vix_level(vix), "source": "yahoo_api"}
     except Exception:
-        pass
+        logger.debug("VIX yahoo_api 源失败")
 
     # 策略 2: yfinance（可能被墙/限流）
     try:
@@ -265,7 +265,7 @@ def fetch_vix() -> Optional[dict]:
             vix = round(float(df["Close"].iloc[-1]), 2)
             return {"vix": vix, "level": _vix_level(vix), "source": "yfinance"}
     except Exception:
-        pass
+        logger.debug("VIX yfinance 源失败")
 
     # 策略 3: akshare 全球指数（东方财富源）
     try:
@@ -275,7 +275,7 @@ def fetch_vix() -> Optional[dict]:
             vix = round(float(df["收盘"].iloc[-1]), 2)
             return {"vix": vix, "level": _vix_level(vix), "source": "akshare_em"}
     except Exception:
-        pass
+        logger.debug("VIX akshare_em 源失败")
 
     logger.warning("VIX 所有数据源均失败")
     return None
@@ -331,7 +331,7 @@ def fetch_hk_stock(code: str) -> Optional[dict]:
                 "source": "akshare_em",
             }
     except Exception:
-        pass
+        logger.debug("[%s] akshare_em 源失败", code)
 
     # 策略 2: akshare 新浪源
     try:
@@ -348,7 +348,7 @@ def fetch_hk_stock(code: str) -> Optional[dict]:
                 "source": "akshare_sina",
             }
     except Exception:
-        pass
+        logger.debug("[%s] akshare_sina 源失败", code)
 
     # 策略 3: yfinance 兜底
     try:
@@ -366,7 +366,7 @@ def fetch_hk_stock(code: str) -> Optional[dict]:
                 "source": "yfinance",
             }
     except Exception:
-        pass
+        logger.debug("[%s] yfinance 源失败", code)
 
     logger.warning(f"[{code}] {name} 所有数据源均失败")
     return None
