@@ -33,10 +33,6 @@ from src import market_data
 logger = logging.getLogger(__name__)
 tz_cn = timezone(timedelta(hours=8))
 
-_LLM_KEY  = os.environ.get("SILICONFLOW_API_KEY", "")
-_LLM_BASE = os.environ.get("SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1")
-_LLM_MODEL = os.environ.get("SILICONFLOW_MODEL", "Qwen/Qwen3-30B-A3B-Instruct-2507")
-
 
 # ═══════════════════════════════════════════════════════════════
 # 通用工具
@@ -132,7 +128,7 @@ def _portfolio_value_summary() -> str:
 
 def _ai_insight(context: str, news_titles: str, max_tokens: int = 400) -> str:
     """LLM 生成持仓+新闻解读。"""
-    if not _LLM_KEY or not news_titles.strip():
+    if not news_titles.strip():
         return ""
 
     pf_summary = _build_portfolio_summary()
@@ -167,10 +163,12 @@ def _ai_insight(context: str, news_titles: str, max_tokens: int = 400) -> str:
 </output_instruction>"""
 
     try:
-        from openai import OpenAI
-        client = OpenAI(api_key=_LLM_KEY, base_url=_LLM_BASE)
+        from src.llm import get_llm_client, get_llm_model
+        client = get_llm_client()
+        if client is None:
+            return ""
         resp = client.chat.completions.create(
-            model=_LLM_MODEL, max_tokens=max_tokens, temperature=0.3,
+            model=get_llm_model(), max_tokens=max_tokens, temperature=0.3,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.choices[0].message.content.strip()

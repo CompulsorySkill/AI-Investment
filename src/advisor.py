@@ -18,8 +18,6 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from openai import OpenAI
-
 from src.feishu_client import FeishuClient
 from src.constants import TARGET_WEIGHTS
 from src import market_data
@@ -30,9 +28,7 @@ from src import strategy
 # 配置
 # ═══════════════════════════════════════════════════════════════
 
-API_KEY = os.environ.get("SILICONFLOW_API_KEY", "")
-API_BASE_URL = os.environ.get("SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1")
-MODEL_NAME = os.environ.get("SILICONFLOW_MODEL", "Qwen/Qwen3-30B-A3B-Instruct-2507")
+# ═══════════════════════════════════════════════════════════════
 
 # 偏离度红线
 DEVIATION_THRESHOLD = 0.03  # ±3% 触发再平衡
@@ -490,13 +486,14 @@ def main(vix_override: Optional[float] = None, skip_ai: bool = False):
         print("[4/6] 调用大模型生成投资建议...")
         prompt = build_prompt(rebalance_data, vix_data, news_articles=news_articles, verdict=verdict)
 
-        if not API_KEY:
+        from src.llm import get_llm_client, get_llm_model
+        client_ai = get_llm_client()
+        if client_ai is None:
             print("      ⚠️  SILICONFLOW_API_KEY 未设置，跳过 AI 分析")
         else:
             try:
-                client_ai = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
                 resp = client_ai.chat.completions.create(
-                    model=MODEL_NAME,
+                    model=get_llm_model(),
                     max_tokens=2048,
                     messages=[{"role": "user", "content": prompt}],
                 )

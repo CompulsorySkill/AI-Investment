@@ -28,12 +28,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 
 import akshare as ak
-from openai import OpenAI
-
-# ---- 配置 ----
-API_KEY = os.environ.get("SILICONFLOW_API_KEY", "")
-API_BASE_URL = os.environ.get("SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1")
-MODEL_NAME = os.environ.get("SILICONFLOW_MODEL", "Qwen/Qwen3-30B-A3B-Thinking-2507")
 
 FETCH_TIMEOUT = 15
 MAX_RETRIES = 2
@@ -186,9 +180,12 @@ def build_prompt(items: list[dict]) -> str:
 
 
 def gen_brief(prompt: str) -> str:
-    client = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
+    from src.llm import get_llm_client, get_llm_model
+    client = get_llm_client()
+    if client is None:
+        return "LLM 未配置"
     resp = client.chat.completions.create(
-        model=MODEL_NAME,
+        model=get_llm_model(),
         max_tokens=300,
         messages=[{"role": "user", "content": prompt}],
     )
