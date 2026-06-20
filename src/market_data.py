@@ -31,8 +31,20 @@ logger = logging.getLogger(__name__)
 # 代理防御（国内数据源需要直连，不能走代理）
 # ═══════════════════════════════════════════════════════════════
 
-for _key in ("http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"):
-    os.environ.pop(_key, None)
+_PROXY_CLEANED = False
+
+
+def _ensure_no_proxy() -> None:
+    """移除代理环境变量，确保国内数据源直连。
+
+    惰性调用（首次 fetch 时才清理），避免 import 时副作用。
+    """
+    global _PROXY_CLEANED
+    if _PROXY_CLEANED:
+        return
+    for _key in ("http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"):
+        os.environ.pop(_key, None)
+    _PROXY_CLEANED = True
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -76,6 +88,8 @@ def fetch_cn_etf(code: str) -> Optional[dict]:
         {"code": "515080", "name": "中证红利ETF", "close": 1.50, "change_pct": +0.35}
         失败返回 None
     """
+    _ensure_no_proxy()
+
     try:
         import akshare as ak
     except ImportError:
@@ -240,6 +254,7 @@ def fetch_vix() -> Optional[dict]:
 
     Yahoo Finance v8 chart API 在国内通常可用，且无需认证。
     """
+    _ensure_no_proxy()
     import requests
 
     # 策略 1: Yahoo Finance v8 chart API（直连，国内可用）
@@ -314,6 +329,8 @@ def fetch_hk_stock(code: str) -> Optional[dict]:
         {"code": "00700", "name": "腾讯控股", "close": 350.0, "change_pct": +1.50}
         失败返回 None
     """
+    _ensure_no_proxy()
+
     name = HK_STOCK_MAP.get(code, code)
 
     # 策略 1: akshare 东方财富源（国内可用，免费）
